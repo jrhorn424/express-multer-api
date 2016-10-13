@@ -32,12 +32,35 @@ const parseFile = (fileBuffer) => {
   return file;
 };
 
-const logMessage = (file) => {
-  console.log(`${filename} is ${file.data.length} bytes long and is of mime ${file.mime}`);
+const upload = (file) => {
+  const options = {
+    // get the bucket name from your AWS S3 console
+    Bucket: 'ga-wdi-boston-jeffh',
+    // attach the fileBuffer as a stream to send to S3
+    Body: file.data,
+    // allow anyone to access the URL of the uploaded file
+    ACL: 'public-read',
+    // tell S3 what the mime-type is
+    ContentType: file.mime,
+    // pick a filename for S3 to use for the upload
+    Key: `test/test.${file.ext}`
+  };
+
+  // don't actually upload yet, just pass the data down the Promise chain
+  return Promise.resolve(options);
+};
+
+const logMessage = (upload) => {
+  // get rid of the stream for now, so I can log the rest of my options in the
+  // terminal without seeing the stream
+  delete upload.Body;
+  // turn the pojo into a string so I can see it on the console
+  console.log(`the upload options are ${JSON.stringify(upload)}`);
 };
 
 readFile(filename)
 .then(parseFile)
+.then(upload)
 .then(logMessage)
 .catch(console.error)
 ;
