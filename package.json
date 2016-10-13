@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "./bin/express server",
-    "s3-upload": "./bin/s3-upload.js"
+    "s3-upload": "node ./bin/s3-upload.js"
   },
   "engines": {
     "node": "4.4.0"
