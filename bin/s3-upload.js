@@ -4,6 +4,8 @@
 require('dotenv').config();
 
 const fs = require('fs');
+const crypto = require('crypto');
+
 const fileType = require('file-type');
 const AWS = require('aws-sdk');
 
@@ -36,6 +38,31 @@ const parseFile = (fileBuffer) => {
   return file;
 };
 
+const randomHexString = (length) => {
+  return new Promise((resolve, reject) => {
+    crypto.randomBytes(length, (error, buffer) => {
+      if (error) {
+        reject(error);
+      }
+
+      resolve(buffer.toString('hex'));
+    });
+  });
+};
+
+const nameFile = (file) => {
+  return randomHexString(16)
+  .then((val) => {
+    file.name = val;
+    return file;
+  });
+};
+
+const nameDirectory = (file) => {
+  file.dir = new Date().toISOString().split('T')[0];
+  return file;
+};
+
 const s3 = new AWS.S3({
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -54,7 +81,7 @@ const upload = (file) => {
     // tell S3 what the mime-type is
     ContentType: file.mime,
     // pick a filename for S3 to use for the upload
-    Key: `test/test.${file.ext}`
+    Key: `${file.dir}/${file.name}.${file.ext}`
   };
 
   return new Promise((resolve, reject) => {
@@ -75,6 +102,8 @@ const logMessage = (response) => {
 
 readFile(filename)
 .then(parseFile)
+.then(nameFile)
+.then(nameDirectory)
 .then(upload)
 .then(logMessage)
 .catch(console.error)
